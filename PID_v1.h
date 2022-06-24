@@ -18,14 +18,15 @@ class PID
   #define P_ON_E 1
   #define OUTMIN 900
   #define OUTMAX 2100
+  #define T_SET  1500
 
   //commonly used functions **************************************************************************
     PID(uint16_t*, uint16_t*, uint16_t*,        // * constructor.  links the PID to the Input, Output, and 
       double, double, double, int, int, int);   //   Setpoint.  Initial tuning parameters are also set here.
                                                 //   (overload for specifying proportional mode)
 
-    PID(uint16_t*, uint16_t*, uint16_t*,        // * constructor.  links the PID to the Input, Output, and 
-      double, double, double, int, int);        //   Setpoint.  Initial tuning parameters are also set here
+    PID(uint16_t* input, uint16_t* output, uint16_t* setpoint,        // * constructor.  links the PID to the Input, Output, and 
+      double kp, double kd, double ki, int, int);        //   Setpoint.  Initial tuning parameters are also set here
 	
     void SetMode(int Mode);               // * sets PID to either Manual (0) or Auto (non-0)
 
