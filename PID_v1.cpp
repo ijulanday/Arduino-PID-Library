@@ -62,26 +62,28 @@ bool PID::Compute()
    double input = *myInput;
    double error = *mySetpoint - input;
    double dInput = (input - lastInput);
-   outputSum+= (ki * error); //output sum starts as your initial output; it's global and is added to or removed from each iteration of this compute loop
+   
+   /* add integral term to output */
+   outputTemp += (kidT * error); 
 
    /*Add Proportional on Measurement, if P_ON_M is specified*/
-   if(!pOnE) outputSum-= kp * dInput;
+   if (!pOnE) outputTemp -= kp * dInput;
 
-   if(outputSum > outMax) outputSum= outMax;
-   else if(outputSum < outMin) outputSum= outMin;
+   /* pre-filter output, not sure why but that's what the dude did */
+   if (outputTemp > outMax) outputTemp = outMax;
+   else if (outputTemp < outMin) outputTemp = outMin;
 
    /*Add Proportional on Error, if P_ON_E is specified*/
-   double output;
-   if(pOnE) output = kp * error;
-   else output = 0;
+   if (pOnE) outputTemp += kp * error;
 
-   /*Compute Rest of PID Output*/
-   output += outputSum - kd * dInput;
+   /* Compute Rest of PID Output*/
+   outputTemp -= kddT * dInput;
 
-      if(output > outMax) output = outMax;
-   else if(output < outMin) output = outMin;
-      *myOutput = output;
-
+   /* filter output again */
+   if (outputTemp > outMax) outputTemp = outMax;
+   else if(outputTemp < outMin) outputTemp = outMin;
+   
+   *myOutput = outputTemp;
 
    return true;
 }
@@ -102,14 +104,14 @@ void PID::SetTunings(double Kp, double Ki, double Kd, int POn)
 
    double SampleTimeInSec = ((double)sampleTimeMs)/1000;
    kp = Kp;
-   ki = Ki * SampleTimeInSec;
-   kd = Kd / SampleTimeInSec;
+   kidT = Ki * SampleTimeInSec;
+   kddT = Kd / SampleTimeInSec;
 
   if(controllerDirection ==REVERSE)
    {
       kp = (0 - kp);
-      ki = (0 - ki);
-      kd = (0 - kd);
+      kidT = (0 - kidT);
+      kddT = (0 - kddT);
    }
 }
 
@@ -129,8 +131,8 @@ void PID::SetSampleTime(int NewSampleTime)
    {
       double ratio  = (double)NewSampleTime
                       / (double)sampleTimeMs;
-      ki *= ratio;
-      kd /= ratio;
+      kidT *= ratio;
+      kddT /= ratio;
       sampleTimeMs = (unsigned long)NewSampleTime;
    }
 }
@@ -154,8 +156,8 @@ void PID::SetOutputLimits(double Min, double Max)
 	   if(*myOutput > outMax) *myOutput = outMax;
 	   else if(*myOutput < outMin) *myOutput = outMin;
 
-	   if(outputSum > outMax) outputSum= outMax;
-	   else if(outputSum < outMin) outputSum= outMin;
+	   if(outputTemp > outMax) outputTemp= outMax;
+	   else if(outputTemp < outMin) outputTemp= outMin;
    }
 }
 
@@ -180,10 +182,10 @@ void PID::SetMode(int Mode)
  ******************************************************************************/
 void PID::Initialize()
 {
-   outputSum = *myOutput;
+   outputTemp = *myOutput;
    lastInput = *myInput;
-   if(outputSum > outMax) outputSum = outMax;
-   else if(outputSum < outMin) outputSum = outMin;
+   if(outputTemp > outMax) outputTemp = outMax;
+   else if(outputTemp < outMin) outputTemp = outMin;
 }
 
 /* SetControllerDirection(...)*************************************************
@@ -197,8 +199,8 @@ void PID::SetControllerDirection(int Direction)
    if(inAuto && Direction !=controllerDirection)
    {
 	    kp = (0 - kp);
-      ki = (0 - ki);
-      kd = (0 - kd);
+      kidT = (0 - kidT);
+      kddT = (0 - kddT);
    }
    controllerDirection = Direction;
 }

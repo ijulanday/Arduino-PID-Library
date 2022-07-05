@@ -72,8 +72,8 @@ class PID
 	double dispKd;				//
     
 	double kp;                  // * (P)roportional Tuning Parameter
-    double ki;                  // * (I)ntegral Tuning Parameter
-    double kd;                  // * (D)erivative Tuning Parameter
+    double kidT;                  // * (I)ntegral Tuning Parameter with time factor
+    double kddT;                  // * (D)erivative Tuning Parameter with time factor
 
 	int controllerDirection;
 	int pOn;
@@ -85,8 +85,9 @@ class PID
                                   //   what these values are.  with pointers we'll just know.
 			  
 	unsigned long lastTime;
-	double outputSum, lastInput;
-
+	double outputTemp, lastInput;    // * compute to outputTemp rather than myOutput pointer to avoid
+                                  // race conditions in multi-threaded applications. also that's just
+                                  // how this library was when i forked it so oh well lol 
 	double outMin, outMax;
 	bool inAuto, pOnE;
 };
