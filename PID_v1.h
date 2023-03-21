@@ -3,6 +3,12 @@
 #define LIBRARY_VERSION	1.2.1
 #define USE_SETTIME_CHECKS FALSE
 
+#if ARDUINO >= 100
+  #include "Arduino.h"
+#else
+  #include "WProgram.h"
+#endif
+
 class PID
 {
 
