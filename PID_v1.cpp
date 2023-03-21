@@ -68,16 +68,19 @@ bool PID::Compute()
    else if (outputTemp < outMin) outputTemp = outMin;
 
    /*Add Proportional on Error, if P_ON_E is specified*/
+   double output;  /* i'm also not sure why the original author made another variable
+                     , but i believe it may be impactful so I'm reverting the prev change to eliminate this */
    if (pOnE) outputTemp += kp * error;
+   else output = 0;
 
    /* Compute Rest of PID Output*/
-   outputTemp -= kddT * dInput;
+   output += outputTemp - kddT * dInput;
 
    /* filter output again */
-   if (outputTemp > outMax) outputTemp = outMax;
-   else if(outputTemp < outMin) outputTemp = outMin;
+   if (output > outMax) output = outMax;
+   else if(output < outMin) output = outMin;
    
-   *myOutput = outputTemp;
+   *myOutput = output;
 
    return true;
 }
