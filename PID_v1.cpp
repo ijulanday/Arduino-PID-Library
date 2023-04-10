@@ -56,7 +56,7 @@ bool PID::Compute()
    double input = *myInput;
    double error = *mySetpoint - input;
    double dInput = (input - lastInput);
-   
+
    /* add integral term to output */
    outputTemp += (kidT * error); 
 
@@ -81,6 +81,7 @@ bool PID::Compute()
    else if(output < outMin) output = outMin;
    
    *myOutput = output;
+   lastInput = input;
 
    return true;
 }
